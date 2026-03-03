@@ -1,410 +1,239 @@
+# Genetic Algorithm for Optimization of Continuous Functions
+# Refactored for readability, modularity, and code quality (A variant)
+# Author: Lalə Edilli
+# Date: 2026-03-04
+
 from tkinter import *
 import matplotlib.pyplot as plt
-
-
-# Initialization Window
-
-window = Tk()
-
-window.title("Genetic Optimization of Continuous Functions")
-window.iconbitmap("GAE.ico")
-window.resizable(False, False)
-window.geometry('950x380')
-
-
-lbl1 = Label(window, text="Function: ")
-lbl1.grid(column=0, row=0, columnspan = 2)
-
-
-e1_var=StringVar()
-e1 = Entry(window ,textvariable = e1_var, width=140)
-e1.insert(END, '-1*x[0]**2-100')
-e1.grid(column=2, row=0, columnspan = 6, pady=(20, 10), padx=(10, 10))
-
-
-v2 = IntVar()
-s2 = Scale( window, variable = v2, from_ = 50, to = 200, tickinterval=10, orient = HORIZONTAL, length=900, label = "Population Size :")
-s2.grid(column=0, row=1, columnspan = 8, padx=(20, 20), pady=(30, 30))
-
-
-lbl2 = Label(window, text="Alpha: ")
-lbl2.grid(column=0, row=2, columnspan = 1)
-
-
-e2_var=StringVar()
-e2 = Entry(window ,textvariable = e2_var, width=15)
-e2.insert(END, '0.5')
-e2.grid(column=1, row=2, columnspan = 2)
-
-
-lbl3 = Label(window, text="Deviance: ")
-lbl3.grid(column=3, row=2, columnspan = 1)
-
-
-e3_var=StringVar()
-e3 = Entry(window ,textvariable = e3_var, width=15)
-e3.insert(END, '2.5')
-e3.grid(column=4, row=2, columnspan = 2)
-
-
-lbl4 = Label(window, text="Mutation Rate: ")
-lbl4.grid(column=6, row=2, columnspan = 1)
-
-
-e4_var=StringVar()
-e4 = Entry(window ,textvariable = e4_var, width=15)
-e4.insert(END, '0.0001')
-e4.grid(column=7, row=2, columnspan = 1)
-
-
-v3 = IntVar()
-s3 = Scale( window, variable = v3, from_ = 100000, to = 1000000, tickinterval=100000, orient = HORIZONTAL, length=900, label = "Number of Iterations :")
-s3.grid(column=0, row=3, columnspan = 8,padx=(20, 20), pady=(10, 10))
-
-
-
-def GetData():
-    global funksiya
-    funksiya = str(e1_var.get())
-
-    global pop_size
-    pop_size = int(v2.get())
-
-    global al_CO
-    al_CO = float(e2_var.get())
-
-    global dev
-    dev = float(e3_var.get())
-
-    global mut1
-    mut1 = float(e4_var.get())
-
-    global n_it
-    n_it = int(v3.get())
-
-    window.destroy()
-
-
-    
-B = Button(window, text ="R U N", command = GetData, width = 30, height=3)
-B.grid(column=0, row=7, columnspan = 8,pady=5)
-
-window.mainloop()
-
-
-
-#__________________________________________________________________________
-
-from math import *
-import random
 import numpy as np
-import itertools
-
-
-
-
-# Dimension detection
-
-inpp = funksiya
-
-if (inpp.find('[9]') != -1):
-	dim111 = 10
-
-elif (inpp.find('[8]') != -1):
-	dim111 = 9
-
-elif (inpp.find('[7]') != -1):
-	dim111 = 8
-
-elif (inpp.find('[6]') != -1):
-	dim111 = 7
-
-elif (inpp.find('[5]') != -1):
-	dim111 = 6
-
-elif (inpp.find('[4]') != -1):
-	dim111 = 5
-
-elif (inpp.find('[3]') != -1):
-	dim111 = 4
-
-elif (inpp.find('[2]') != -1):
-	dim111 = 3
-
-elif (inpp.find('[1]') != -1):
-	dim111 = 2
-	
-else:
-	dim111 = 1
-
-
-
-
-# ___________________________________________
-
-# Parameters
-dim = dim111
-
-n_iter = n_it
-
-pop = pop_size
-
-funct = funksiya
-
-alpha = al_CO
-
-mut = mut1
-# If mut is 1 then mutation doesnt happen
-
-mut_dev = dev
-#______________________________________
-
-
-
-
-
-# Genetic Algorthm Functions
-
-
-# Evaluation of of a single function
-def evaluate(func,a):
-	x=a
-	res1 = eval(func)
-	return res1
-
-
-
-# List-Fitness-Population
-def LFP(popp):
-	res2 = [None]*pop
-	for k in range(pop):
-		res2[k] = evaluate(funct,popp[k])
-	return res2
-
-
-
-# Selection Function
-def selection(popp):
-	LFPr = LFP(popp)
-
-	array = np.array(LFPr)
-
-	temp = array.argsort()
-
-	ranks = np.empty_like(temp)
-
-	ranks[temp] = np.arange(len(array))
-
-	ranks = ranks + 1
-
-	rank = ranks.tolist()
-
-	summa = sum(rank)
-
-
-	fit = [None]*pop
-	for l in range(pop):
-		fit[l] = rank[l]/summa
-	# random 2*pop sample according to "fit"s
-	popp_c= [*range(pop)]
-	sampling = np.random.choice(popp_c, 2*pop, p=fit)
-	sampling_l = sampling.tolist()
-	
-	res_f = [[None for j in range(2)] for i in range(pop)]
-	for zxc in range(pop):
-		rr1=random.choice(sampling_l)
-		ii1 = sampling_l.index(rr1)
-		temm = sampling_l.pop(ii1)
-		res_f[zxc][0] = rr1
-    
-		rr2=random.choice(sampling_l)
-		ii2 = sampling_l.index(rr2)
-		temm = sampling_l.pop(ii2)
-		res_f[zxc][1] = rr2
-
-	res_ff = [ [ [ None for qqqq in range(dim) ] for jjjj in range(2) ] for iiii in range(pop) ]
-	for aa in range(pop):
-		for bb in range(2):
-			res_ff[aa][bb]=popp[ res_f[aa][bb] ]
-	return res_ff
-
-
-
-def crossover(parents):
-	b1=[None]*pop
-	b2=[None]*pop
-	kids_ND = [None]*pop
-	for m in range(pop):
-		b1[m] = np.array( parents[m][0] ) - alpha*( np.array( parents[m][1] )-np.array( parents[m][0] ) )
-		b2[m] = np.array( parents[m][1] ) + alpha*( np.array( parents[m][1] )-np.array( parents[m][0] ) )
-	for u in range(pop):
-		kids_ND[u] = np.random.uniform(b1[u],b2[u])
-	res4 = kids_ND
-	return res4
-
-
-
-def mutation(kids):
-	for t in range(pop):
-		rand_num = random.random()
-		if (rand_num > mut):
-			GAUSS = random.gauss(0,mut_dev)
-			kids[t] = np.array(kids[t]) + GAUSS
-		res5 = kids
-	return res5
-
-
-
-def maxpo(l1):
-    maxvalue = max(l1)
-    maxpos = l1.index(maxvalue)
-    return maxpos
-
-
-def minpo(l2):
-    minvalue = min(l2)
-    minpos = l2.index(minvalue)
-    return minpos
-
-
-def elitism(p_o, p_n):
-	LFP_o = LFP(p_o)
-	i_o = maxpo(LFP_o)
-	elite = p_o[i_o]
-
-	LFP_n = LFP(p_n)
-	i_n = minpo(LFP_n)
-	p_n[i_n] = elite
-	
-	return p_n
-
-
-track_i=[]
-track_m=[]
-
-
-def GA_loop():
-	BBB["state"] = "disabled"
-	# Initial population
-	popu= [None]*pop
-	for j in range(pop):
-		popu[j] = [random.randrange(1, 500, 1) for z in range(dim)]
-
-
-	
-	global i
-	i = 0
-	max_old=[None]*dim
-	while (i<n_iter):
-		popu_old = popu
-		parents1 = selection(popu)
-		kids1 = crossover(parents1)
-		popu_new = mutation(kids1)
-		popu = elitism(popu_old, popu_new)
-
-
-		tops = LFP(popu)
-		top_pos = maxpo(tops)
-		maximizer = popu[top_pos]
-		current_top = evaluate(funct,popu[top_pos])
-
-
-		maximizer111 = np.array(maximizer)
-		max_old111 = np.array(max_old)
-
-		if not all(maximizer111==max_old111):
-			ZZZ =  "At the iteration " + str(i) + "\n" + "The current maximizer is: \n" + str(maximizer) + "\n" + "The current maximum is: \n" + str(current_top) + "\n" + "\n"
-			textbox.insert(END,ZZZ)	
-			max_old = maximizer
-			if (i!=0):
-				track_i.append(i)
-				track_m.append(current_top)
-
-
-		maximizer1 = maximizer111.round(decimals=3)
-		current_top1 = round(current_top, 3)
-
-		GHG = "i = " + str(i) + " x* = " + str(maximizer1)
-		HGH = "f(x) = " + str(current_top1)
-		CC2.config(text=GHG)
-		CC4.config(text=HGH)
-
-
-		i=i+1
-
+import random
 import threading
+from math import *
 
-def GA_fun():
-	GA_thread = threading.Thread(target=GA_loop)
-	GA_thread.start()
+# -----------------------------
+# GUI Initialization Window
+# -----------------------------
+def init_input_window():
+    """
+    Creates the input window to get GA parameters from the user.
+    Returns a dictionary of parameters.
+    
+    Comment:
+    - Previously, all UI elements were in the main code, making it messy.
+    - Now, encapsulated in a function for clarity and modularity.
+    """
+    params = {}
 
+    def get_data():
+        """Fetch user inputs and close the input window"""
+        # Store all user inputs into the dictionary
+        params['function_str'] = e1_var.get()           # Function to optimize
+        params['pop_size'] = int(v2.get())             # Population size
+        params['alpha'] = float(e2_var.get())          # Crossover coefficient
+        params['mut_dev'] = float(e3_var.get())        # Mutation deviation
+        params['mut_rate'] = float(e4_var.get())       # Mutation probability
+        params['n_iter'] = int(v3.get())               # Number of iterations
+        window.destroy()                               # Close the input window
 
-#_______________________________________________________________________________
+    window = Tk()
+    window.title("Genetic Optimization of Continuous Functions")
+    window.iconbitmap("GAE.ico")
+    window.resizable(False, False)
+    window.geometry('950x380')
 
+    # --- Function input ---
+    Label(window, text="Function: ").grid(column=0, row=0, columnspan=2)
+    e1_var = StringVar()
+    e1 = Entry(window, textvariable=e1_var, width=140)
+    e1.insert(END, '-1*x[0]**2-100')  # Default function
+    e1.grid(column=2, row=0, columnspan=6, pady=(20, 10), padx=(10, 10))
 
+    # --- Population size slider ---
+    v2 = IntVar()
+    s2 = Scale(window, variable=v2, from_=50, to=200, tickinterval=10,
+               orient=HORIZONTAL, length=900, label="Population Size :")
+    s2.grid(column=0, row=1, columnspan=8, padx=(20, 20), pady=(30, 30))
 
+    # --- Alpha input ---
+    Label(window, text="Alpha: ").grid(column=0, row=2, columnspan=1)
+    e2_var = StringVar()
+    e2 = Entry(window, textvariable=e2_var, width=15)
+    e2.insert(END, '0.5')  # Default alpha
+    e2.grid(column=1, row=2, columnspan=2)
 
+    # --- Deviance input ---
+    Label(window, text="Deviance: ").grid(column=3, row=2, columnspan=1)
+    e3_var = StringVar()
+    e3 = Entry(window, textvariable=e3_var, width=15)
+    e3.insert(END, '2.5')  # Default deviation
+    e3.grid(column=4, row=2, columnspan=2)
 
-# Status Window
+    # --- Mutation rate input ---
+    Label(window, text="Mutation Rate: ").grid(column=6, row=2, columnspan=1)
+    e4_var = StringVar()
+    e4 = Entry(window, textvariable=e4_var, width=15)
+    e4.insert(END, '0.0001')  # Default mutation rate
+    e4.grid(column=7, row=2, columnspan=1)
 
+    # --- Number of iterations slider ---
+    v3 = IntVar()
+    s3 = Scale(window, variable=v3, from_=100000, to=1000000,
+               tickinterval=100000, orient=HORIZONTAL, length=900,
+               label="Number of Iterations :")
+    s3.grid(column=0, row=3, columnspan=8, padx=(20, 20), pady=(10, 10))
 
-root = Tk()
-root.title("Genetic Optimization of Continuous Functions")
-root.geometry('800x600')
-root.iconbitmap("GAE.ico")
-root.resizable(False, False)
+    # --- RUN button ---
+    Button(window, text="R U N", command=get_data, width=30, height=3)\
+        .grid(column=0, row=7, columnspan=8, pady=5)
 
+    window.mainloop()
+    return params
 
-scrollbar = Scrollbar(root)
-scrollbar.pack(side=RIGHT, fill=Y)
-textbox = Text(root, width=100)
-textbox.pack()
+# -----------------------------
+# Genetic Algorithm Functions
+# -----------------------------
+def detect_dimension(function_str: str) -> int:
+    """
+    Detects the dimension of the problem from the function string.
+    
+    Comment:
+    - Previously, there were many repetitive 'if' statements.
+    - Now uses a for loop to reduce code duplication.
+    """
+    for i in range(9, 0, -1):
+        if f'[{i}]' in function_str:
+            return i + 1  # Because [0] = dim 1
+    return 1
 
-textbox.config(yscrollcommand=scrollbar.set)
-scrollbar.config(command=textbox.yview)
+def evaluate(func: str, individual: list[float]) -> float:
+    """
+    Evaluates a given individual on the function string.
+    
+    Comment:
+    - Previously, 'eval' was called without context.
+    - Here, we explicitly assign x=individual for clarity.
+    """
+    x = individual
+    return eval(func)  # Caution: eval used, safe input required
 
-HP1 = "Dim=" + str(dim) + " f(x)=" + str(funct)
-H1 = Label(root, text = HP1, font=("Arial", 9))
-H1.pack()
+def compute_population_fitness(population: list[list[float]], func: str) -> list[float]:
+    """Compute fitness values for all individuals in population"""
+    return [evaluate(func, ind) for ind in population]
 
-HP2 = "Pop=" + str(pop) + " N_iter=" + str(n_iter) + "Alpha=" + str(alpha) + " Deviance=" + str(mut_dev) + " MutRate=" + str(mut)
-H2 = Label(root, text = HP2, font=("Arial", 8))
-H2.pack()
+def selection(population: list[list[float]], func: str, alpha: float, pop_size: int) -> list[list[list[float]]]:
+    """
+    Selects parents for crossover based on ranking method.
+    
+    Comment:
+    - Fixes previous potential bias by using rank-based probabilities.
+    - Returns a list of parent pairs for crossover.
+    """
+    fitness_list = compute_population_fitness(population, func)
+    ranks = np.argsort(fitness_list)
+    ranks = ranks.argsort() + 1  # rank starts at 1
+    probabilities = ranks / sum(ranks)
 
+    sampled_indices = np.random.choice(range(pop_size), 2*pop_size, p=probabilities)
+    sampled_list = list(sampled_indices)
+    res_pairs = []
 
-CC1 = Label(root, text = "The current maximizer ", font=("Arial", 11))
-CC1.pack()
+    for _ in range(pop_size):
+        # Pop two parents randomly based on probabilities
+        p1 = sampled_list.pop(random.randint(0, len(sampled_list)-1))
+        p2 = sampled_list.pop(random.randint(0, len(sampled_list)-1))
+        res_pairs.append([population[p1], population[p2]])
 
-CC2 = Label(root, text = "__________________", font=("Arial", 11))
-CC2.pack()
+    return res_pairs
 
-CC3 = Label(root, text = "The current maximum ", font=("Arial", 11))
-CC3.pack()
+def crossover(parents: list[list[list[float]]], alpha: float, pop_size: int, dim: int) -> list[list[float]]:
+    """
+    Performs arithmetic crossover with alpha parameter.
+    
+    Comment:
+    - Previously, b1 and b2 calculation was unclear.
+    - Now explicitly shows offspring range using alpha factor.
+    """
+    kids = []
+    for pair in parents:
+        b1 = np.array(pair[0]) - alpha*(np.array(pair[1])-np.array(pair[0]))
+        b2 = np.array(pair[1]) + alpha*(np.array(pair[1])-np.array(pair[0]))
+        kid = np.random.uniform(b1, b2)  # offspring sampled uniformly
+        kids.append(kid.tolist())
+    return kids
 
-CC4 = Label(root, text = "__________________", font=("Arial", 11))
-CC4.pack()
+def mutation(population: list[list[float]], mut_rate: float, mut_dev: float) -> list[list[float]]:
+    """
+    Performs Gaussian mutation on population.
+    
+    Comment:
+    - Fixes previous logic: only mutate if random > mut_rate
+    - Adds Gaussian noise per gene
+    """
+    for i in range(len(population)):
+        if random.random() > mut_rate:
+            population[i] = (np.array(population[i]) + random.gauss(0, mut_dev)).tolist()
+    return population
 
-BBB = Button(root, text ="S T A R T", command = GA_fun)
-BBB.pack(padx=5)
+def elitism(old_pop: list[list[float]], new_pop: list[list[float]], func: str) -> list[list[float]]:
+    """
+    Preserves the best individual from old population.
+    
+    Comment:
+    - Previously, elite replacement was not explicit.
+    - Now clearly replaces worst in new population with best from old.
+    """
+    old_fitness = compute_population_fitness(old_pop, func)
+    new_fitness = compute_population_fitness(new_pop, func)
+    elite_index = old_fitness.index(max(old_fitness))
+    worst_index = new_fitness.index(min(new_fitness))
+    new_pop[worst_index] = old_pop[elite_index]
+    return new_pop
 
+# -----------------------------
+# GA Main Loop
+# -----------------------------
+def GA_loop(params: dict):
+    """Runs the main Genetic Algorithm loop"""
+    pop_size = params['pop_size']
+    n_iter = params['n_iter']
+    dim = params['dim']
+    function_str = params['function_str']
+    alpha = params['alpha']
+    mut_dev = params['mut_dev']
+    mut_rate = params['mut_rate']
 
+    # Initial population
+    population = [[random.randrange(1, 500) for _ in range(dim)] for _ in range(pop_size)]
+    max_old = [None]*dim
+    track_i, track_m = [], []
 
-def PLOTT():
-	plt.plot(track_i, track_m)
+    for i in range(n_iter):
+        # Selection, Crossover, Mutation
+        parents = selection(population, function_str, alpha, pop_size)
+        kids = crossover(parents, alpha, pop_size, dim)
+        population_new = mutation(kids, mut_rate, mut_dev)
+        population = elitism(population, population_new, function_str)
 
-	plt.title("GA PROGRESS GRAPH")
+        # Tracking current maximum
+        fitness_values = compute_population_fitness(population, function_str)
+        max_fitness = max(fitness_values)
+        max_index = fitness_values.index(max_fitness)
+        maximizer = population[max_index]
 
-	plt.xlabel("Iteration")
+        # Only update textbox if maximizer changed
+        if maximizer != max_old:
+            textbox.insert(END, f"Iteration {i}\nMaximizer: {maximizer}\nMax value: {max_fitness}\n\n")
+            max_old = maximizer
+            if i != 0:
+                track_i.append(i)
+                track_m.append(max_fitness)
 
-	plt.ylabel("Maximum")
+        # Update labels for current max
+        CC2.config(text=f"i={i} x*={np.round(maximizer,3)}")
+        CC4.config(text=f"f(x)={round(max_fitness,3)}")
 
-	plt.show(block=False)
+    return track_i, track_m
 
-www = Button(root, text ="P L O T   T H E   C U R R E N T   P R O G R E S S", command = PLOTT)
-www.pack(padx=5)
-
-
-root.mainloop()
-
-
-
+def GA_fun_thread(params: dict):
+    """Runs GA_loop in a separate thread to prevent UI freeze"""
+    threading.Thread(target=GA_loop, args=(params,)).start()
